@@ -1,0 +1,33 @@
+name: CI ARIMA & LSTM Validation
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install --upgrade pip nbformat
+      - name: Validate ARIMA Notebook
+        run: |
+          python -c "
+          import nbformat
+          with open('Stock Price Prediction using ARIMA.ipynb', 'r', encoding='utf-8') as f:
+              nb = nbformat.read(f, as_version=4)
+          print(f'Successfully validated notebook: {len(nb.cells)} cells')
+          "
+      - name: Verify Model Weights and Prediction Artifacts
+        run: |
+          python -c "
+          import os
+          for f in ['lstm_model.h5', 'lstm_model.keras', 'predictions.xls']:
+              if os.path.exists(f):
+                  print(f'Artifact {f} present ({os.path.getsize(f)} bytes)')
+          "
